@@ -1,9 +1,10 @@
 'use strict';
 
 var _ = require('underscore');
-var WebData = require('./web-data');
 var FileHandler = require('./file-handler');
-var PageFetcher = require('.page-fetcher');
+var PageFetcher = require('./page-fetcher');
+var path = require('path');
+var Logger = require('./logger');
 
 function PageController(pages) {
     this._pages = pages;
@@ -12,13 +13,15 @@ function PageController(pages) {
 
     this.fetch = function () {
         var self = this;
-        var fileHandler = new FileHandler(this._setupFile);
+        var baseSetupPath = path.join(__dirname, '../files');
+        var fileHandler = new FileHandler(baseSetupPath, this._setupFile);
         fileHandler.getFileContents(function(error, pages) {
             if (error) {
-                console.log('Error reading:', self._setupFile);
+                Logger.log('Reading in source files' , __filename, true, false);
                 throw error;
             }
 
+            pages.followRedirect = true;
             self._pages = pages;
             self._crawl();
         });
@@ -27,6 +30,10 @@ function PageController(pages) {
     this._crawl = function() {
         _.each(this._pages, function(data) {
             var pageFetcher = new PageFetcher(data);
+            pageFetcher.on(
+                pageFetcher.events.finishedFetching,
+                this._handleData.bind(this)
+            );
             pageFetcher.fetch();
         }, this);
     };
@@ -34,14 +41,25 @@ function PageController(pages) {
     this._handleData = function (webData) {
         if (!_.has(this._visitedPages, webData.siteUrl)) {
             this._visitedPages[webData.siteUrl] = webData.siteUrl;
-            var fileHandler = new FileHandler(webData.siteUrl);
+            var basePath = path.join(__dirname, '../files/pages');
+            var fileHandler = new FileHandler(basePath, webData.siteUrl + '.json');
             fileHandler.saveToFile(webData, function(error) {
                 if (error) {
-                    console.log('Error: failed to save data for:', webData.siteUrl);
+                    Logger.log(
+                        'failed to save data for: ' + webData.siteUrl,
+                        __filename,
+                        true,
+                        false
+                    );
                     throw error;
                 }
 
-                console.log('Saved data for:', webData.siteUrl);
+                Logger.log(
+                    'Saved data for: ' + webData.siteUrl,
+                    __filename,
+                    false,
+                    false
+                );
             });
         }
     };

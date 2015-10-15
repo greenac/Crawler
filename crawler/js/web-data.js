@@ -22,7 +22,6 @@ function WebData(data) {
             this.siteUrl = this._data.siteUrl;
         }
 
-        console.log('reading in data:', this._data);
         if (_.has(this._data, 'date')) {
             this.date = moment(this._data.date);
         } else {
