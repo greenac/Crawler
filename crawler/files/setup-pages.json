@@ -18,5 +18,9 @@
   {
     "host": "www.espn.go.com",
     "path": ""
+  },
+  {
+    "host": "www.yahoo.com",
+    "path": ""
   }
 ]

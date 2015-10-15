@@ -5,12 +5,13 @@ var FileHandler = require('./file-handler');
 var WebData = require('./web-data');
 var PageFetcher = require('./page-fetcher');
 var FetchController = require('./fetch-controller');
+var TestProcess = require('./test-process');
 
 function App() {
     this._app = express();
     this.start = function() {
         if (process.argv.length > 2 && process.argv[2] === 'test') {
-            console.log('in test');
+            TestProcess.spawn();
         }  else if (process.argv.length > 2 && process.argv[2] === 'filehandler') {
             var data = 'this is some more mas mucho vin html data: <html><h1>A Header</h1></html>';
             var webData = new WebData({
@@ -25,7 +26,6 @@ function App() {
                 }
 
                 console.log('saved:', webData.asJson(), 'to file');
-
                 fileHandler.getFileContents(function(err, retrievedData) {
                     if (error) {
                         throw err;

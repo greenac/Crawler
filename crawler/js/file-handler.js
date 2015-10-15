@@ -4,11 +4,11 @@ var fs = require('fs');
 var path = require('path');
 var jsonFile = require('jsonfile');
 var _ = require('underscore');
+var Logger = require('./logger');
 
-function FileHandler(fileName) {
+function FileHandler(basePath, fileName) {
+    this._basePath = basePath;
     this._fileName = fileName;
-    this._baseFilePath = '../pages';
-    this._encoding = 'utf8';
     this._partsToExclude = {
         www: 'www',
         com: 'com',
@@ -28,6 +28,15 @@ function FileHandler(fileName) {
     };
 
     /*
+     * Set the base path
+     * @public
+     * @param {String} basePath -- The base path of the file to read/write from
+     */
+    this.setBasePath = function(basePath) {
+        this._basePath = basePath;
+    };
+
+    /*
      * Creates the path to the file to read/write from
      * @private
      */
@@ -41,7 +50,7 @@ function FileHandler(fileName) {
             }
         }, this);
 
-        return path.join(__dirname, this._baseFilePath, name.join('.'));
+        return path.join(this._basePath, name.join('.'));
     };
 
     /*
@@ -60,6 +69,8 @@ function FileHandler(fileName) {
      * @param {Function} callback -- Callback function with error and data parameters
      */
     this.getFileContents = function(callback) {
+        Logger.log('getting file contents for: ' + this._fileName, __filename, false, false);
+        this._filePath.bind(this);
         jsonFile.readFile(this._filePath(), callback);
     };
 }
